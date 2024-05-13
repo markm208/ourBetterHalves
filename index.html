@@ -136,6 +136,7 @@
         <button class="btn btn-primary btn-block" onclick="calculateDates()">Create Your Timeline</button>
         <hr />
         <div class="results" id="resultsDisplay"></div>
+        <div id="shareTimeline"></div>
       </div>
       <div class="col-md-3">
         <!-- Leave this column empty -->
@@ -146,7 +147,6 @@
     <div class="row">
       <div class="col-md-12">
         <div id="timeline"></div>
-        <div id="shareTimeline"></div>
         <div>
           <p class="text-end">
             Brought to you by <a href="mailto:markm208@gmail.com" target="_blank">Mark Mahoney</a>
@@ -483,7 +483,7 @@
         //create an anchor and add it to the resultDisplay 
         const shareLabel = document.createElement('span');
         shareLabel.classList.add('shareLabel');
-        shareLabel.textContent = 'Share Your Timeline';
+        shareLabel.textContent = 'Share This Timeline';
         shareTimeline.appendChild(shareLabel);
 
         //add a button to copy the link to the clipboard
