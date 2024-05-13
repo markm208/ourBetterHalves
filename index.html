@@ -80,11 +80,11 @@
         <!-- Partner 1 inputs -->
         <div class="form-group">
           <label for="partner1Name">Partner 1:</label>
-          <input type="text" class="form-control" id="partner1Name" placeholder="Enter Name" value="Mark">
+          <input type="text" class="form-control" id="partner1Name" placeholder="Enter Name">
         </div>
         <div class="form-group">
           <label for="partner1Birthdate">Birthdate:</label>
-          <input type="date" class="form-control" id="partner1Birthdate" value="1973-03-19">
+          <input type="date" class="form-control" id="partner1Birthdate">
         </div>
       </div>
       <div class="col-md-2">
@@ -94,11 +94,11 @@
         <!-- Partner 2 inputs -->
         <div class="form-group">
           <label for="partner2Name">Partner 2:</label>
-          <input type="text" class="form-control" id="partner2Name" placeholder="Enter Name" value="Laura">
+          <input type="text" class="form-control" id="partner2Name" placeholder="Enter Name">
         </div>
         <div class="form-group">
           <label for="partner2Birthdate">Birthdate:</label>
-          <input type="date" class="form-control" id="partner2Birthdate" value="1973-11-01">
+          <input type="date" class="form-control" id="partner2Birthdate">
         </div>
         <div class="form-group">
           <input type="checkbox" id="addChildrenOnly">
@@ -115,11 +115,11 @@
         <!-- Meeting date, wedding date, and optional children inputs -->
         <div class="form-group">
           <label for="meetingDate">Meeting Date:</label>
-          <input type="date" class="form-control" id="meetingDate" value="1999-07-02" >
+          <input type="date" class="form-control" id="meetingDate">
         </div>
         <div class="form-group">
           <label for="weddingDate">Wedding Date (Optional):</label>
-          <input type="date" class="form-control" id="weddingDate" value="2003-12-12">
+          <input type="date" class="form-control" id="weddingDate">
         </div>
         <div id="optionalChildren">    
           <p>If you have children, enter their names and birthdates here</p>
@@ -192,7 +192,7 @@
         let childIndex = 0;
         while (url.searchParams.get(`child${childIndex}Name`)) {
           const childName = url.searchParams.get(`child${childIndex}Name`);
-          const childBirthdate = url.searchParams.get(`child${childIndex}Birthdate`);
+          const childBirthdate = createDateFromInputLocalTimezone(url.searchParams.get(`child${childIndex}Birthdate`));
 
           const childElement = document.createElement('div');
           childElement.classList.add('childContainer');
@@ -203,7 +203,7 @@
 
           const childBirthdateElement = document.createElement('span');
           childBirthdateElement.classList.add('childBirthdate');
-          childBirthdateElement.textContent = `${new Date(childBirthdate).toLocaleDateString('en-US', dateStringOptions)}`;
+          childBirthdateElement.textContent = `${childBirthdate}`;
 
           const deleteButton = document.createElement('button');
           deleteButton.classList.add('btn');
