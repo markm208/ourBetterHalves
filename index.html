@@ -203,7 +203,7 @@
 
           const childBirthdateElement = document.createElement('span');
           childBirthdateElement.classList.add('childBirthdate');
-          childBirthdateElement.textContent = `${childBirthdate}`;
+          childBirthdateElement.textContent = `${childBirthdate.toLocaleDateString('en-US', dateStringOptions)}`;
 
           const deleteButton = document.createElement('button');
           deleteButton.classList.add('btn');
