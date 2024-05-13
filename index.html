@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Better Halves</title>
+  <!-- CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+  <!-- JS, Popper.js, and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+  <link title="timeline-styles" rel="stylesheet" href="https://cdn.knightlab.com/libs/timeline3/latest/css/timeline.css">
+  <style>
+    
+    .results {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 16px;
+      width: 100%;
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center; 
+      align-items: center; 
+      font-family: 'PT Sans Narrow', sans-serif;   
+      /* text-transform: uppercase;    */
+      font-weight: 700;
+      font-size: 46px;
+      line-height: 46px;
+    }
+
+    #timeline {
+      width: 100%;
+      height: 600px;
+      display: none;
+    }
+
+    #shareTimeline {
+      text-align: right;
+      padding: 10px;
+    }
+
+    .shareLabel {
+      padding: 5px;
+    }
+
+    .copyButton {
+      display: block;
+      margin: 0 auto;
+      padding: 5px;
+    }
+
+    .copiedMessage {
+      padding: 5px;
+    }
+
+    .childName {
+      padding-right: 5px;
+    }
+
+    .childBirthdate {
+      padding-right: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row py-3">
+      <div class="col-md-12 logo">
+        Our Better Halves
+      </div>
+    </div>
+    <div class="row py-3">
+      <div class="col-md-5">
+        <!-- Partner 1 inputs -->
+        <div class="form-group">
+          <label for="partner1Name">Partner 1:</label>
+          <input type="text" class="form-control" id="partner1Name" placeholder="Enter Name" value="Mark">
+        </div>
+        <div class="form-group">
+          <label for="partner1Birthdate">Birthdate:</label>
+          <input type="date" class="form-control" id="partner1Birthdate" value="1973-03-19">
+        </div>
+      </div>
+      <div class="col-md-2">
+        <!-- Leave this column empty -->
+      </div>
+      <div class="col-md-5">
+        <!-- Partner 2 inputs -->
+        <div class="form-group">
+          <label for="partner2Name">Partner 2:</label>
+          <input type="text" class="form-control" id="partner2Name" placeholder="Enter Name" value="Laura">
+        </div>
+        <div class="form-group">
+          <label for="partner2Birthdate">Birthdate:</label>
+          <input type="date" class="form-control" id="partner2Birthdate" value="1973-11-01">
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="addChildrenOnly">
+          <label for="addChildrenOnly">I wish to add my children without adding a partner</label>  
+        </div>
+      </div>
+    </div>
+
+    <div class="row py-3">
+      <div class="col-md-3">
+        <!-- Leave this column empty -->
+      </div>
+      <div class="col-md-6">
+        <!-- Meeting date, wedding date, and optional children inputs -->
+        <div class="form-group">
+          <label for="meetingDate">Meeting Date:</label>
+          <input type="date" class="form-control" id="meetingDate" value="1999-07-02" >
+        </div>
+        <div class="form-group">
+          <label for="weddingDate">Wedding Date (Optional):</label>
+          <input type="date" class="form-control" id="weddingDate" value="2003-12-12">
+        </div>
+        <div id="optionalChildren">    
+          <p>If you have children, enter their names and birthdates here</p>
+          <form id="childForm">
+            <input type="text" id="childNameInput" placeholder="Enter Name">
+            <input type="date" id="childBirthdateInput">
+            <button type="button" id="addChildButton" class="btn btn-outline-primary" onclick="addChildToForm()">Add a Child</button>
+            <span class="inputError" id="childError"></span>
+          </form>
+          <div id="childrenContainer"></div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <!-- Leave this column empty -->
+      </div>
+    </div>
+
+    <div class="row py-3">
+      <div class="col-md-3">
+        <!-- Leave this column empty -->
+      </div>
+      <div class="col-md-6">
+        <!-- Button and divs -->
+        <button class="btn btn-primary btn-block" onclick="calculateDates()">Create Your Timeline</button>
+        <hr />
+        <div class="results" id="resultsDisplay"></div>
+      </div>
+      <div class="col-md-3">
+        <!-- Leave this column empty -->
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-12">
+        <div id="timeline"></div>
+        <div id="shareTimeline"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.knightlab.com/libs/timeline3/latest/js/timeline.js"></script>
+  <script>
+    const dateStringOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const url = new URL(window.location.href);
+      const olderPartnerName = url.searchParams.get('olderPartnerName');
+
+      if (olderPartnerName) {
+        //if this is a no partner with children only calculation
+        if (url.searchParams.get('addChildrenOnly')) {
+          document.getElementById('addChildrenOnly').checked = true;
+          document.getElementById('partner1Name').value = olderPartnerName;
+          document.getElementById('partner1Birthdate').value = url.searchParams.get('olderPartnerBirthdate');
+          
+          //disable the partner2, meeting date, and wedding date inputs
+          document.getElementById('partner2Name').disabled = true;
+          document.getElementById('partner2Birthdate').disabled = true;
+          document.getElementById('meetingDate').disabled = true;
+          document.getElementById('weddingDate').disabled = true;
+        } else {
+          document.getElementById('partner1Name').value = olderPartnerName;
+          document.getElementById('partner1Birthdate').value = url.searchParams.get('olderPartnerBirthdate');
+          document.getElementById('partner2Name').value = url.searchParams.get('youngerPartnerName');
+          document.getElementById('partner2Birthdate').value = url.searchParams.get('youngerPartnerBirthdate');
+          document.getElementById('meetingDate').value = url.searchParams.get('meetingDate');
+          document.getElementById('weddingDate').value = url.searchParams.get('weddingDate');
+        }
+        let childIndex = 0;
+        while (url.searchParams.get(`child${childIndex}Name`)) {
+          const childName = url.searchParams.get(`child${childIndex}Name`);
+          const childBirthdate = url.searchParams.get(`child${childIndex}Birthdate`);
+
+          const childElement = document.createElement('div');
+          childElement.classList.add('childContainer');
+
+          const childNameElement = document.createElement('span');
+          childNameElement.classList.add('childName');
+          childNameElement.textContent = `${childName}`;
+
+          const childBirthdateElement = document.createElement('span');
+          childBirthdateElement.classList.add('childBirthdate');
+          childBirthdateElement.textContent = `${new Date(childBirthdate).toLocaleDateString('en-US', dateStringOptions)}`;
+
+          const deleteButton = document.createElement('button');
+          deleteButton.classList.add('btn');
+          deleteButton.classList.add('btn-danger');
+          deleteButton.textContent = 'x';
+          deleteButton.addEventListener('click', () => {
+            childElement.remove();
+          });
+
+          childElement.appendChild(childNameElement);
+          childElement.appendChild(childBirthdateElement);
+          childElement.appendChild(deleteButton);
+
+          document.getElementById('childrenContainer').appendChild(childElement);
+
+          childIndex++;
+        }
+
+        calculateDates();
+      }
+    });
+
+    document.getElementById('addChildrenOnly').addEventListener('change', (event) => {
+      const isChecked = event.target.checked;
+      document.getElementById('meetingDate').disabled = isChecked;
+      document.getElementById('weddingDate').disabled = isChecked;
+      document.getElementById('partner2Name').disabled = isChecked;
+      document.getElementById('partner2Birthdate').disabled = isChecked;
+    });
+
+    function addChildToForm() {
+      const name = document.getElementById('childNameInput').value.trim();
+      if (name === "") {
+        document.getElementById('childError').textContent = 'Please enter in a name.';
+        return;
+      }
+
+      let birthdate = document.getElementById('childBirthdateInput').value;
+      if (!birthdate) {
+        document.getElementById('childError').textContent = 'Please enter in a date.';
+        return;
+      }
+      birthdate = createDateFromInputLocalTimezone(birthdate);
+
+      if (isNaN(birthdate.getTime())) {
+        document.getElementById('childError').textContent = 'Please enter in a valid date.';
+        return;
+      }
+
+      if (birthdate > new Date()) {
+        document.getElementById('childError').textContent = 'Please ensure that the birthdate is in the past.';
+        return;
+      }
+
+      const childElement = document.createElement('div');
+      childElement.classList.add('childContainer');
+
+      const childNameElement = document.createElement('span');
+      childNameElement.classList.add('childName');
+      childNameElement.textContent = `${name}`;
+
+      const childBirthdateElement = document.createElement('span');
+      childBirthdateElement.classList.add('childBirthdate');
+      childBirthdateElement.textContent = `${birthdate.toLocaleDateString('en-US', dateStringOptions)}`;
+
+      const deleteButton = document.createElement('button');
+      deleteButton.classList.add('btn');
+      deleteButton.classList.add('btn-outline-danger');
+      deleteButton.classList.add('btn-sm');
+      const x = document.createElement('i');
+      x.classList.add('bi');
+      x.classList.add('bi-x');
+      deleteButton.appendChild(x);
+
+      deleteButton.addEventListener('click', () => {
+        childElement.remove();
+      });
+
+      childElement.appendChild(childNameElement);
+      childElement.appendChild(childBirthdateElement);
+      childElement.appendChild(deleteButton);
+
+      document.getElementById('childrenContainer').appendChild(childElement);
+
+      document.getElementById('childError').textContent = "";
+      document.getElementById('childNameInput').value = "";
+      document.getElementById('childNameInput').focus();
+      document.getElementById('childBirthdateInput').value = "";
+    }
+
+    function getInput(relationshipData) {
+      const addChildrenOnly = document.getElementById('addChildrenOnly').checked;
+      //one parent w/ children only calculation
+      if (addChildrenOnly === true) {
+        relationshipData.hasPartner = false;
+        return getRelationshipDataNoPartnerWithChildren(relationshipData);
+      } else { //two partners and possibly children
+        relationshipData.hasPartner = true;
+        return getRelationshipDataWithPartner(relationshipData);
+      }
+    }
+
+    function getRelationshipDataNoPartnerWithChildren(relationshipData) {
+      const resultsDisplay = document.getElementById('resultsDisplay');
+      const partner1Name = document.getElementById('partner1Name').value.trim();
+      const partner1Birthdate = createDateFromInputLocalTimezone(document.getElementById('partner1Birthdate').value);
+
+      if (partner1Name === "" || isNaN(partner1Birthdate.getTime())) {
+        resultsDisplay.innerHTML = 'Please ensure that the first partner is filled in.';
+        return false;
+      }
+
+      if (partner1Birthdate >= relationshipData.todaysDate) {
+        resultsDisplay.innerHTML = `Please ensure that the first partner's birthdate is in the past.`;
+        return false;
+      }
+      relationshipData.olderPartnerName = partner1Name;
+      relationshipData.olderPartnerBirthdate = partner1Birthdate;
+
+      const childrenData = getRelationshipChildren(relationshipData);
+      if (childrenData.length === 0) {
+        resultsDisplay.innerHTML = 'Please add at least one child.';
+        return false;
+      }
+      relationshipData.children = childrenData;
+
+      return true;
+    }
+
+    function getRelationshipChildren(relationshipData) {
+      const childContainers = document.getElementsByClassName('childContainer');
+      const childrenData = [];
+      for (let i = 0; i < childContainers.length; i++) {
+        const name = childContainers[i].querySelector('.childName').textContent;
+        const birthdate = new Date(childContainers[i].querySelector('.childBirthdate').textContent);
+
+        const childInfo = {
+          name,
+          birthdate,
+          olderPartnerCrossover: addDaysToDate(birthdate, diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, birthdate))
+        }
+
+        if (relationshipData.hasPartner) {
+          childInfo.youngerPartnerCrossover = addDaysToDate(birthdate, diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, birthdate));
+        }
+
+        childrenData.push(childInfo);
+      }
+
+      return childrenData;
+    }
+
+    function getRelationshipDataWithPartner(relationshipData) {
+      const resultsDisplay = document.getElementById('resultsDisplay');
+      //partner 1
+      const partner1Name = document.getElementById('partner1Name').value.trim();
+      const partner1Birthdate = createDateFromInputLocalTimezone(document.getElementById('partner1Birthdate').value);
+
+      if (partner1Name === "" || isNaN(partner1Birthdate.getTime())) {
+        resultsDisplay.innerHTML = 'Please ensure that the first partner is filled in.';
+        return false;
+      }
+      if (partner1Birthdate >= relationshipData.todaysDate) {
+        resultsDisplay.innerHTML = `Please ensure that the first partner's birthdate is in the past.`;
+        return false;
+      }
+
+      //partner 2
+      const partner2Name = document.getElementById('partner2Name').value.trim();
+      const partner2Birthdate = createDateFromInputLocalTimezone(document.getElementById('partner2Birthdate').value);
+
+      if (partner2Name === "" || isNaN(partner2Birthdate.getTime())) {
+        resultsDisplay.innerHTML = 'Please ensure that the second partner is filled in.';
+        return false;
+      }
+      if (partner2Birthdate >= relationshipData.todaysDate) {
+        resultsDisplay.innerHTML = `Please ensure that the second partner's birthdate is in the past.`;
+        return false;
+      }
+
+      //find out which partner is older
+      if (partner2Birthdate > partner1Birthdate) {
+        relationshipData.olderPartnerName = partner1Name;
+        relationshipData.olderPartnerBirthdate = partner1Birthdate;
+
+        relationshipData.youngerPartnerName = partner2Name;
+        relationshipData.youngerPartnerBirthdate = partner2Birthdate;
+      } else {
+        relationshipData.olderPartnerName = partner2Name;
+        relationshipData.olderPartnerBirthdate = partner2Birthdate;
+
+        relationshipData.youngerPartnerName = partner1Name;
+        relationshipData.youngerPartnerBirthdate = partner1Birthdate;
+      }
+
+      relationshipData.meetingDate = createDateFromInputLocalTimezone(document.getElementById('meetingDate').value);
+
+      if (relationshipData.meetingDate > relationshipData.todaysDate) {
+        resultsDisplay.innerHTML = 'Please ensure that the meeting date is in the past.';
+        return false;
+      } else if (relationshipData.meetingDate < relationshipData.olderPartnerBirthdate) {
+        resultsDisplay.innerHTML = `Please ensure that the meeting date is after ${relationshipData.olderPartnerName}'s birthdate.`;
+        return false;
+      } else if (relationshipData.meetingDate < relationshipData.youngerPartnerBirthdate) {
+        resultsDisplay.innerHTML = `Please ensure that the meeting date is after ${relationshipData.youngerPartnerName}'s birthdate.`;
+        return false;
+      }
+
+      const weddingDate = document.getElementById('weddingDate').value;
+      //verify that a valid wedding date was entered, if not that is ok but don't store it
+      if (weddingDate) {
+        relationshipData.weddingDate = createDateFromInputLocalTimezone(weddingDate);
+
+        if (relationshipData.weddingDate > relationshipData.todaysDate) {
+          resultsDisplay.innerHTML = 'Please ensure that the wedding date is in the past.';
+          return false;
+        } 
+      }
+
+      const childrenData = getRelationshipChildren(relationshipData);
+      relationshipData.children = childrenData;
+
+      return true;
+    }
+
+    function calculateDates() {
+      const relationshipData = {
+        todaysDate: new Date()
+      };
+      
+      //get the input from the user form (names, birthdates, meeting date)
+      if (getInput(relationshipData)) {
+
+        //if there is a partnership calculate the crossover dates
+        if (relationshipData.hasPartner) {
+          relationshipData.olderPartnerCrossoverDate = addDaysToDate(relationshipData.meetingDate, diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.meetingDate));
+          relationshipData.youngerPartnerCrossoverDate = addDaysToDate(relationshipData.meetingDate, diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.meetingDate));
+        }
+        //create a timeline of events
+        createTimeline(relationshipData);
+
+        //create a link with all form data in the url
+        const url = new URL(window.location.href);
+        url.searchParams.set('olderPartnerName', relationshipData.olderPartnerName);
+        url.searchParams.set('olderPartnerBirthdate', relationshipData.olderPartnerBirthdate.toISOString().split('T')[0]);
+        if (relationshipData.hasPartner) {
+          url.searchParams.set('youngerPartnerName', relationshipData.youngerPartnerName);
+          url.searchParams.set('youngerPartnerBirthdate', relationshipData.youngerPartnerBirthdate.toISOString().split('T')[0]);
+          url.searchParams.set('meetingDate', relationshipData.meetingDate.toISOString().split('T')[0]);
+          if (relationshipData.weddingDate) {
+            url.searchParams.set('weddingDate', relationshipData.weddingDate.toISOString().split('T')[0]);
+          }
+        } else {
+          url.searchParams.set('addChildrenOnly', 'true');
+        }
+
+        //for each child add their name and birthdate to the url
+        relationshipData.children.forEach((child, index) => {
+          url.searchParams.set(`child${index}Name`, child.name);
+          url.searchParams.set(`child${index}Birthdate`, child.birthdate.toISOString().split('T')[0]);
+        });
+
+        //add the link to the displayResults div
+        const shareTimeline = document.getElementById('shareTimeline');
+        shareTimeline.innerHTML = '';
+
+        //create an anchor and add it to the resultDisplay 
+        const shareLabel = document.createElement('span');
+        shareLabel.classList.add('shareLabel');
+        shareLabel.textContent = 'Share Your Timeline';
+        shareTimeline.appendChild(shareLabel);
+
+        //add a button to copy the link to the clipboard
+        const copyButton = document.createElement('a');
+        copyButton.classList.add('btn');
+        copyButton.classList.add('btn-outline-primary');
+        copyButton.classList.add('btn-sm');
+        copyButton.textContent = 'Copy Timeline Link to Clipboard';
+        copyButton.addEventListener('click', () => {
+          navigator.clipboard.writeText(url.href);
+          //show a message that the link was copied that fades out after 10 seconds
+          const copiedMessage = document.createElement('span');
+          copiedMessage.classList.add('copiedMessage');
+          copiedMessage.textContent = 'Link copied to clipboard!';
+          shareTimeline.appendChild(copiedMessage);
+          setTimeout(() => {
+            copiedMessage.remove();
+          }, 5000);
+
+        });
+        shareTimeline.appendChild(copyButton);
+      }
+    }
+
+    function createTimeline(relationshipData) {
+      const timelineConfig = {
+        title: {
+          text: {
+            headline: "Your Relationship Timeline",
+            text: `<p>Important dates in your relationship. Move forward to learn more about ${getAllNamesString(relationshipData)}.</p>`
+          }
+        },
+        events: []
+      };
+
+      const timelineOptions = {
+        timenav_position: "top",
+        scale_factor: .75,
+      };
+
+      addEventToTimeline(relationshipData.todaysDate, `Today`, getTodaysDateText(relationshipData), timelineConfig.events);
+      addEventToTimeline(relationshipData.olderPartnerBirthdate, `Birth of ${relationshipData.olderPartnerName}`, getOlderPartnersBirthdayText(relationshipData), timelineConfig.events);
+      if (relationshipData.hasPartner) {
+        addEventToTimeline(relationshipData.youngerPartnerBirthdate, `Birth of ${relationshipData.youngerPartnerName}`, getYoungerPartnersBirthdayText(relationshipData), timelineConfig.events);
+        addEventToTimeline(relationshipData.meetingDate, "Meeting Date", getMeetingDateText(relationshipData), timelineConfig.events);
+        if (relationshipData.weddingDate) {
+          addEventToTimeline(relationshipData.weddingDate, "Wedding Date", getWeddingDateText(relationshipData), timelineConfig.events);
+        }
+        addEventToTimeline(relationshipData.youngerPartnerCrossoverDate, `${relationshipData.youngerPartnerName} has lived more days with ${relationshipData.olderPartnerName} than without`, getYoungerPartnersCrossoverText(relationshipData), timelineConfig.events);
+        addEventToTimeline(relationshipData.olderPartnerCrossoverDate, `${relationshipData.olderPartnerName} has lived more days with ${relationshipData.youngerPartnerName} than without`, getOlderPartnersCrossoverText(relationshipData), timelineConfig.events);
+      }
+
+      if (relationshipData.children.length > 0) {
+        relationshipData.children.forEach(child => {
+          addEventToTimeline(child.birthdate, `Birth of ${child.name}`, getChildBirthText(child, relationshipData), timelineConfig.events);
+          addEventToTimeline(child.olderPartnerCrossover, `${child.name} and ${relationshipData.olderPartnerName}'s Crossover`, getChildCrossoverOlderPartnerText(child, relationshipData), timelineConfig.events);
+          if (relationshipData.hasPartner) {
+            addEventToTimeline(child.youngerPartnerCrossover, `${child.name} and ${relationshipData.youngerPartnerName}'s Crossover`, getChildCrossoverYoungerPartnerText(child, relationshipData), timelineConfig.events);
+          }
+        });
+      }
+
+      const timeline = new TL.Timeline('timeline', timelineConfig, timelineOptions);
+      document.getElementById('timeline').style.display = 'block';
+    }
+
+    function addEventToTimeline(date, headline, text, events) {
+      var newEvent = {
+        start_date: {
+          year: date.getFullYear(),
+          month: date.getMonth() + 1,
+          day: date.getDate()
+        },
+        text: {
+          headline: headline,
+          text: text
+        }
+      };
+
+      events.push(newEvent);
+    }
+
+    function getAllNamesString(relationshipData) {
+      const names = [];
+      names.push(relationshipData.olderPartnerName);
+      if (relationshipData.youngerPartnerName) {
+        names.push(relationshipData.youngerPartnerName);
+      }
+      relationshipData.children.forEach(child => {
+        names.push(child.name);
+      });
+
+      let namesWithOxfordCommas = "";
+      if (names.length === 2) {
+        namesWithOxfordCommas = `${names[0]} and ${names[1]}`;
+      } else if (names.length > 2) {
+        const finalName = names.pop();
+        namesWithOxfordCommas = `${names.join(', ')}, and ${finalName}`;
+      }
+
+      return namesWithOxfordCommas;
+    }
+
+    function getOlderPartnersBirthdayText(relationshipData) {
+      const output = [];
+      if (relationshipData.hasPartner) {
+        const ageDifferenceInDays = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.youngerPartnerBirthdate);
+        const olderPartnerDaysAliveBeforeMeeting = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.meetingDate);
+        output.push(`<p>${relationshipData.olderPartnerName} is ${convertDaysToYears(ageDifferenceInDays)} older than ${relationshipData.youngerPartnerName}.`); 
+        output.push(`<p>The two will meet each other ${convertDaysToYears(olderPartnerDaysAliveBeforeMeeting)} from this date.</p>`);
+        if(relationshipData.weddingDate) {
+          const olderPartnerDaysAliveBeforeMarrying = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.weddingDate);
+          output.push(`<p>They will get married ${convertDaysToYears(olderPartnerDaysAliveBeforeMarrying)} from this date.</p>`);
+        } 
+
+      } else {
+        output.push(`<p>${relationshipData.olderPartnerName} was born ${convertDaysToYears(diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.todaysDate))} ago.</p>`);
+      }
+      return output.join('\n');
+    }
+
+    function getYoungerPartnersBirthdayText(relationshipData) {
+      const output = [];
+      const youngerPartnerDaysAliveBeforeMeeting = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.meetingDate);
+      output.push(`<p>${relationshipData.youngerPartnerName} will meet ${relationshipData.olderPartnerName} in ${convertDaysToYears(youngerPartnerDaysAliveBeforeMeeting)} from this date.<p>`);
+      if(relationshipData.weddingDate) {
+        const youngerPartnerDaysAliveBeforeMarrying = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.weddingDate);
+        output.push(`<p>They will get married ${convertDaysToYears(youngerPartnerDaysAliveBeforeMarrying)} from this date.</p>`);
+      }
+      return output.join('\n');
+    }
+
+    function getMeetingDateText(relationshipData) {
+      const output = [];
+      const daysTogether = diffBetweenDatesInDays(relationshipData.meetingDate, relationshipData.todaysDate);
+      const olderPartnerDaysAliveBeforeMeeting = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.meetingDate);
+      const youngerPartnerDaysAliveBeforeMeeting = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.meetingDate);
+
+      output.push(`<p>${relationshipData.olderPartnerName} and ${relationshipData.youngerPartnerName} met ${convertDaysToYears(daysTogether)} ago.</p>`);
+      output.push(`<p>${relationshipData.olderPartnerName} was ${convertDaysToYears(olderPartnerDaysAliveBeforeMeeting)} old.</p>`);
+      output.push(`<p>${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerDaysAliveBeforeMeeting)} old.</p>`);
+      if(relationshipData.weddingDate) {
+        const daysUntilWedding = diffBetweenDatesInDays(relationshipData.meetingDate, relationshipData.weddingDate);
+        output.push(`<p>They will get married in ${convertDaysToYears(daysUntilWedding)} from this date.</p>`);
+      }
+      return output.join('\n');
+    }
+
+    function getWeddingDateText(relationshipData) {
+      const output = [];
+      const daysSinceWedding = diffBetweenDatesInDays(relationshipData.weddingDate, relationshipData.todaysDate);
+      const daysSinceMeeting = diffBetweenDatesInDays(relationshipData.meetingDate, relationshipData.weddingDate);
+      output.push(`<p>${relationshipData.olderPartnerName} and ${relationshipData.youngerPartnerName} got married ${convertDaysToYears(daysSinceWedding)} ago.</p>`);
+      output.push(`<p>They married ${convertDaysToYears(daysSinceMeeting)} after they met.</p>`);
+      return output.join('\n');
+    }
+
+    function getTodaysDateText(relationshipData) {
+      const output = [];
+      if (relationshipData.hasPartner) {
+        const daysTogether = diffBetweenDatesInDays(relationshipData.meetingDate, relationshipData.todaysDate);
+        output.push(`<p>${relationshipData.olderPartnerName} and ${relationshipData.youngerPartnerName} met ${convertDaysToYears(daysTogether)} ago.</p>`);
+        if(relationshipData.weddingDate) {
+          const daysSinceWedding = diffBetweenDatesInDays(relationshipData.weddingDate, relationshipData.todaysDate);
+          output.push(`<p>${relationshipData.olderPartnerName} and ${relationshipData.youngerPartnerName} were married ${convertDaysToYears(daysSinceWedding)} ago.</p>`);
+        }
+        output.push(`<p>${relationshipData.olderPartnerName} is ${convertDaysToYears(diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.todaysDate))} old.</p>`);
+        output.push(`<p>${relationshipData.youngerPartnerName} is ${convertDaysToYears(diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.todaysDate))} old.</p>`);
+      } else {
+        output.push(`<p>${relationshipData.olderPartnerName} is ${convertDaysToYears(diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.todaysDate))} old.</p>`);
+      }
+
+      relationshipData.children.forEach(child => {
+        output.push(`<p>${child.name} is ${convertDaysToYears(diffBetweenDatesInDays(child.birthdate, relationshipData.todaysDate))} old.</p>`);
+      });
+      return output.join('\n');
+    }
+
+    function getOlderPartnersCrossoverText(relationshipData) {
+      const output = [];
+      const olderPartnerAge = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.olderPartnerCrossoverDate);
+      const youngerPartnerAge = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.olderPartnerCrossoverDate);
+      if (relationshipData.todaysDate > relationshipData.olderPartnerCrossoverDate) {
+        const daysSinceCrossover = diffBetweenDatesInDays(relationshipData.olderPartnerCrossoverDate, relationshipData.todaysDate);
+        output.push(`<p>${relationshipData.olderPartnerName} has lived more time with ${relationshipData.youngerPartnerName} than without!</p>`);
+        output.push(`<p>It has been ${convertDaysToYears(daysSinceCrossover)} since ${relationshipData.olderPartnerName} crossed over with ${relationshipData.youngerPartnerName}.</p>`);
+        output.push(`<p>${relationshipData.olderPartnerName} was ${convertDaysToYears(olderPartnerAge)} old and ${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerAge)} old.</p>`);
+      } else {
+        output.push(`<p>After this day, ${relationshipData.olderPartnerName} will have spent more time with ${relationshipData.youngerPartnerName} than without!</p>`);
+        output.push(`<p>${relationshipData.olderPartnerName} will be ${convertDaysToYears(olderPartnerAge)} old and ${relationshipData.youngerPartnerName} will be ${convertDaysToYears(youngerPartnerAge)} old.</p>`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(relationshipData.olderPartnerName, relationshipData.youngerPartnerName, relationshipData.olderPartnerCrossoverDate)}`);
+      }
+      return output.join('\n');
+    }
+
+    function getYoungerPartnersCrossoverText(relationshipData) {
+      const output = [];
+      const olderPartnerAge = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, relationshipData.youngerPartnerCrossoverDate);
+      const youngerPartnerAge = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, relationshipData.youngerPartnerCrossoverDate);
+      if (relationshipData.todaysDate > relationshipData.youngerPartnerCrossoverDate) {
+        const daysSinceCrossover = diffBetweenDatesInDays(relationshipData.youngerPartnerCrossoverDate, relationshipData.todaysDate);
+        output.push(`<p>${relationshipData.youngerPartnerName} has lived more time with ${relationshipData.olderPartnerName} than without!</p>`);
+        output.push(`<p>It has been ${convertDaysToYears(daysSinceCrossover)} since ${relationshipData.youngerPartnerName} crossed over with ${relationshipData.olderPartnerName}.</p>`);
+        output.push(`<p>${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerAge)} old and ${relationshipData.olderPartnerName} was ${convertDaysToYears(olderPartnerAge)} old.</p>`);
+      } else {
+        output.push(`<p>After this day, ${relationshipData.youngerPartnerName} will have spent more time with ${relationshipData.olderPartnerName} than without!</p>`);
+        output.push(`<p>${relationshipData.youngerPartnerName} will be ${convertDaysToYears(youngerPartnerAge)} old and ${relationshipData.olderPartnerName} will be ${convertDaysToYears(olderPartnerAge)} old.</p>`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(relationshipData.youngerPartnerName, relationshipData.olderPartnerName, relationshipData.youngerPartnerCrossoverDate)}`);
+      }
+      return output.join('\n');
+    }
+
+    function getChildBirthText(child, relationshipData) {
+      const output = [];
+
+      const numDaysChildAlive = diffBetweenDatesInDays(child.birthdate, relationshipData.todaysDate);
+      const olderPartnerDaysAliveWhenChildBorn = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, child.birthdate);
+
+      output.push(`<p>${child.name} was born ${convertDaysToYears(numDaysChildAlive)} ago.</p>`);
+      output.push(`<p>${relationshipData.olderPartnerName} was ${convertDaysToYears(olderPartnerDaysAliveWhenChildBorn)} old on this date.</p>`);
+
+      if (relationshipData.hasPartner) {
+        const youngerPartnerDaysAliveWhenChildBorn = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, child.birthdate);
+        output.push(`<p>${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerDaysAliveWhenChildBorn)} old on this date.</p>`);
+      }
+      return output.join('\n');
+    }
+
+    function getChildCrossoverOlderPartnerText(child, relationshipData) {
+      const output = [];
+      const childAge = diffBetweenDatesInDays(child.birthdate, child.olderPartnerCrossover);
+      const olderPartnerAge = diffBetweenDatesInDays(relationshipData.olderPartnerBirthdate, child.olderPartnerCrossover);
+      
+      if (child.olderPartnerCrossover < relationshipData.todaysDate) {
+        const daysSinceCrossover = diffBetweenDatesInDays(child.olderPartnerCrossover, relationshipData.todaysDate);
+        output.push(`<p>${relationshipData.olderPartnerName} has lived more time with ${child.name} than without!</p>`);
+        output.push(`<p>${relationshipData.olderPartnerName} was ${convertDaysToYears(olderPartnerAge)} old when they crossed over with ${child.name}.</p>`);
+        output.push(`<p>${child.name} was ${convertDaysToYears(childAge)} old.</p>`);
+        output.push(`<p>It has been ${convertDaysToYears(daysSinceCrossover)} since ${relationshipData.olderPartnerName} crossed over with ${child.name}.</p>`);
+      } else {
+        output.push(`<p>After this day, ${relationshipData.olderPartnerName} will have spent more time with ${child.name} than without!</p>`);
+        output.push(`<p>${relationshipData.olderPartnerName} will be ${convertDaysToYears(olderPartnerAge)} old and ${child.name} will be ${convertDaysToYears(childAge)} old when they cross over.</p>`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(child.name, relationshipData.olderPartnerName, child.olderPartnerCrossover)}`);
+      }
+      return output.join('\n');
+    }
+
+    function getChildCrossoverYoungerPartnerText(child, relationshipData) {
+      const output = [];
+      const childAge = diffBetweenDatesInDays(child.birthdate, child.youngerPartnerCrossover);
+      const youngerPartnerAge = diffBetweenDatesInDays(relationshipData.youngerPartnerBirthdate, child.youngerPartnerCrossover);
+
+      if (child.youngerPartnerCrossover < relationshipData.todaysDate) {
+        const daysSinceCrossover = diffBetweenDatesInDays(child.youngerPartnerCrossover, relationshipData.todaysDate);
+        output.push(`<p>${relationshipData.youngerPartnerName} has lived more time with ${child.name} than without!</p>`);
+        output.push(`<p>${child.name} was ${convertDaysToYears(childAge)} old.</p>`);
+        output.push(`<p>${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerAge)} old when they crossed over with ${child.name}.</p>`);
+        output.push(`<p>It has been ${convertDaysToYears(daysSinceCrossover)} since ${relationshipData.youngerPartnerName} crossed over with ${child.name}.</p>`);
+      } else {
+        output.push(`<p>After this day, ${relationshipData.youngerPartnerName} will have spent more time with ${child.name} than without!</p>`);
+        output.push(`<p>${relationshipData.youngerPartnerName} will be ${convertDaysToYears(youngerPartnerAge)} old and ${child.name} will be ${convertDaysToYears(childAge)} old when they cross over.</p>`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(child.name, relationshipData.youngerPartnerName, child.youngerPartnerCrossover)}`);
+      }
+      return output.join('\n');
+    }
+
+    function createCalendarLinksForHalfLifeAniversary(partner1Name, partner2Name, date) {
+      const google = `<a href="${createGoogleCalendarLink(partner1Name, partner2Name, date)}" target="_blank">Google Calendar</a>`;
+      const outlook = `<a href="${createOutlookCalendarLink(partner1Name, partner2Name, date)}" target="_blank">Outlook Calendar</a>`;
+      //const ical = `<a href="#" onclick="downloadICS('${partner1Name}', '${partner2Name}', '${date.toISOString()}')">Download ICS</a>`;
+      //const ical = `<a href="#" onclick="downloadICS()">Download ICS</a>`;
+      const icsFileURI = createICalendarLink(partner1Name, partner2Name, date);
+      const ical = `<a href="${icsFileURI}" target="_blank" rel="noopener" download="event.ics">Download ICS</a>`;
+      return `<span>${google} | ${outlook} | ${ical}</span>`;
+    }
+
+    function createGoogleCalendarLink(partner1Name, partner2Name, date) {
+      const details = `Celebrating more days together with ${partner2Name} than apart!`;
+      let startDate = date.toISOString().split('T')[0].replace(/-/g, '');
+      let endDate = new Date(date.getTime() + 86400000).toISOString().split('T')[0].replace(/-/g, '');
+      return `https://calendar.google.com/calendar/r/eventedit?text=Half+Life+Anniversary+of+${encodeURIComponent(partner1Name)}+and+${encodeURIComponent(partner2Name)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(details)}`;
+    }
+
+    function createOutlookCalendarLink(partner1Name, partner2Name, date) {
+      const details = `Celebrating more days together with ${partner2Name} than apart!`;
+      const startDate = date.toISOString().split('T')[0];
+      const endDate = new Date(date.getTime() + 86400000).toISOString().split('T')[0];
+      return `https://outlook.live.com/calendar/0/deeplink/compose?subject=Half+Life+Anniversary+of+${encodeURIComponent(partner1Name)}+and+${encodeURIComponent(partner2Name)}&startdt=${startDate}&enddt=${endDate}&allday=true&body=${encodeURIComponent(details)}`;
+    }
+
+    function createICalendarLink(partner1Name, partner2Name, date) {
+      // Generate the iCalendar data
+      const icsData = generateICalendarData(partner1Name, partner2Name, date);
+
+      // Encode the ICS data into a Data URI
+      const encodedData = encodeURIComponent(icsData);
+      const dataUri = 'data:text/calendar;charset=utf-8,' + encodedData;
+
+      return dataUri;
+    }
+
+    function generateICalendarData(partner1Name, partner2Name, date) {
+      const details = `Celebrating more days together with ${partner2Name} than apart!`;
+      const startDate = date.toISOString().split('T')[0].replace(/-/g, '');
+      const endDate = new Date(date.getTime() + 86400000).toISOString().split('T')[0].replace(/-/g, '');
+
+      return `BEGIN:VCALENDAR
+  VERSION:2.0
+  BEGIN:VEVENT
+  DTSTART;VALUE=DATE:${startDate}
+  DTEND;VALUE=DATE:${endDate}
+  SUMMARY:Half Life Anniversary of ${partner1Name} and ${partner2Name}
+  DESCRIPTION:${details}
+  END:VEVENT
+  END:VCALENDAR`;
+    }
+    // function downloadICS(partner1Name, partner2Name, date) {
+    //   const details = `Celebrating more days together with ${partner2Name} than apart!`;
+    //   const formattedDate = date.split('T')[0].replace(/-/g, '');
+    //   const content = [
+    //     'BEGIN:VCALENDAR',
+    //     'VERSION:2.0',
+    //     'BEGIN:VEVENT',
+    //     `DTSTART;VALUE=DATE:${formattedDate}`,
+    //     `DTEND;VALUE=DATE:${formattedDate}`,
+    //     `SUMMARY:Half Life Anniversary with ${partner2Name}`,
+    //     'DESCRIPTION:' + details,
+    //     'END:VEVENT',
+    //     'END:VCALENDAR'
+    //   ].join('\r\n');
+    //   const blob = new Blob([content], { type: 'text/calendar' });
+    //   const url = URL.createObjectURL(blob);
+    //   const a = document.createElement('a');
+    //   a.href = url;
+    //   a.download = `${name.replace(' ', '_')}_Half_Life_Anniversary.ics`;
+    //   document.body.appendChild(a);
+    //   a.click();
+    //   document.body.removeChild(a);
+    // }
+
+    function convertDaysToYears(days, digits = 1, showDays = true) {
+      let dateString = `${(days / 365.25).toFixed(digits)} years`;
+      if (showDays) {
+        dateString += ` (${days} days)`;
+      }
+      return dateString;
+    }
+
+    function diffBetweenDatesInDays(earlierDate, laterDate) {
+      return Math.floor((laterDate - earlierDate) / (1000 * 60 * 60 * 24));
+    }
+
+    function addDaysToDate(aDate, numDays) {
+      const newDate = new Date(aDate);
+      newDate.setDate(newDate.getDate() + numDays);
+      return newDate;
+    }
+
+    function createDateFromInputLocalTimezone(dateString) {
+      const dateParts = dateString.split('-');
+      return new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+    }
+  </script>
+</body>
+
+</html>
