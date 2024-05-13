@@ -474,6 +474,9 @@
           url.searchParams.set(`child${index}Birthdate`, child.birthdate.toISOString().split('T')[0]);
         });
 
+        //set the browsers url to the new url
+        window.history.pushState({}, '', url);
+
         //add the link to the displayResults div
         const shareTimeline = document.getElementById('shareTimeline');
         shareTimeline.innerHTML = '';
@@ -752,7 +755,12 @@
       const google = `<a href="${createGoogleCalendarLink(partner1Name, partner2Name, date)}" target="_blank">Google Calendar</a>`;
       const outlook = `<a href="${createOutlookCalendarLink(partner1Name, partner2Name, date)}" target="_blank">Outlook Calendar</a>`;
       const icsFileURI = createICalendarLink(partner1Name, partner2Name, date);
-      const ical = `<a href="${icsFileURI}" target="_blank" rel="noopener" download="event.ics">Download ICS</a>`;
+      const ical = `<a data-href="${icsFileURI}" target="_blank" rel="noopener" download="event.ics">Download ICS</a>`;
+      setTimeout(() => {
+        document.querySelectorAll('a[data-href]').forEach(a => {
+          a.href = a.getAttribute('data-href');
+        });
+      }, 1000);
       return `<span>${google} | ${outlook} | ${ical}</span>`;
     }
 
@@ -786,39 +794,8 @@
       const startDate = date.toISOString().split('T')[0].replace(/-/g, '');
       const endDate = new Date(date.getTime() + 86400000).toISOString().split('T')[0].replace(/-/g, '');
 
-      return `BEGIN:VCALENDAR
-  VERSION:2.0
-  BEGIN:VEVENT
-  DTSTART;VALUE=DATE:${startDate}
-  DTEND;VALUE=DATE:${endDate}
-  SUMMARY:Half Life Anniversary of ${partner1Name} and ${partner2Name}
-  DESCRIPTION:${details}
-  END:VEVENT
-  END:VCALENDAR`;
+      return `BEGIN:VCALENDAR\r\nVERSION:2.0\r\nBEGIN:VEVENT\r\nDTSTART;VALUE=DATE:${startDate}\r\nDTEND;VALUE=DATE:${endDate}\r\nSUMMARY:Half Life Anniversary of ${partner1Name} and ${partner2Name}\r\nDESCRIPTION:${details}\r\nEND:VEVENT\r\nEND:VCALENDAR`;
     }
-    // function downloadICS(partner1Name, partner2Name, date) {
-    //   const details = `Celebrating more days together with ${partner2Name} than apart!`;
-    //   const formattedDate = date.split('T')[0].replace(/-/g, '');
-    //   const content = [
-    //     'BEGIN:VCALENDAR',
-    //     'VERSION:2.0',
-    //     'BEGIN:VEVENT',
-    //     `DTSTART;VALUE=DATE:${formattedDate}`,
-    //     `DTEND;VALUE=DATE:${formattedDate}`,
-    //     `SUMMARY:Half Life Anniversary with ${partner2Name}`,
-    //     'DESCRIPTION:' + details,
-    //     'END:VEVENT',
-    //     'END:VCALENDAR'
-    //   ].join('\r\n');
-    //   const blob = new Blob([content], { type: 'text/calendar' });
-    //   const url = URL.createObjectURL(blob);
-    //   const a = document.createElement('a');
-    //   a.href = url;
-    //   a.download = `${name.replace(' ', '_')}_Half_Life_Anniversary.ics`;
-    //   document.body.appendChild(a);
-    //   a.click();
-    //   document.body.removeChild(a);
-    // }
 
     function convertDaysToYears(days, digits = 1, showDays = true) {
       let dateString = `${(days / 365.25).toFixed(digits)} years`;
