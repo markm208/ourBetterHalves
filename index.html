@@ -716,7 +716,7 @@
       } else {
         output.push(`<p>After this day, ${relationshipData.olderPartnerName} will have spent more time with ${child.name} than without!</p>`);
         output.push(`<p>${relationshipData.olderPartnerName} will be ${convertDaysToYears(olderPartnerAge)} old and ${child.name} will be ${convertDaysToYears(childAge)} old when they cross over.</p>`);
-        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(child.name, relationshipData.olderPartnerName, child.olderPartnerCrossover)}`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(relationshipData.olderPartnerName, child.name, child.olderPartnerCrossover)}`);
       }
       return output.join('\n');
     }
@@ -735,7 +735,7 @@
       } else {
         output.push(`<p>After this day, ${relationshipData.youngerPartnerName} will have spent more time with ${child.name} than without!</p>`);
         output.push(`<p>${relationshipData.youngerPartnerName} will be ${convertDaysToYears(youngerPartnerAge)} old and ${child.name} will be ${convertDaysToYears(childAge)} old when they cross over.</p>`);
-        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(child.name, relationshipData.youngerPartnerName, child.youngerPartnerCrossover)}`);
+        output.push(`<p>Add this event to your calendar: ${createCalendarLinksForHalfLifeAniversary(relationshipData.youngerPartnerName, child.name, child.youngerPartnerCrossover)}`);
       }
       return output.join('\n');
     }
