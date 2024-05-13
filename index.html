@@ -511,7 +511,7 @@
         title: {
           text: {
             headline: 'Your Relationship Timeline',
-            text: `<p>Important dates in your relationship. Move forward to learn more about ${getAllNamesString(relationshipData)}.</p>`
+            text: `<p>Important dates in your relationships. Move forward to learn more about ${getAllNamesString(relationshipData)}.</p>`
           }
         },
         events: []
@@ -625,7 +625,7 @@
       output.push(`<p>${relationshipData.youngerPartnerName} was ${convertDaysToYears(youngerPartnerDaysAliveBeforeMeeting)} old.</p>`);
       if(relationshipData.weddingDate) {
         const daysUntilWedding = diffBetweenDatesInDays(relationshipData.meetingDate, relationshipData.weddingDate);
-        output.push(`<p>They will get married in ${convertDaysToYears(daysUntilWedding)} from this date.</p>`);
+        output.push(`<p>They will get married ${convertDaysToYears(daysUntilWedding)} from this date.</p>`);
       }
       return output.join('\n');
     }
